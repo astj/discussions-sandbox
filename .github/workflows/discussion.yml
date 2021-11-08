@@ -15,7 +15,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - run: |
-          echo "$DISC"
+      - name: Transform timestamp
+        id: timestamp_transform
+        run: |
+          echo "::set-output name=discussion_created_at::$(date --date=$TIMESTAMP +%s)"
         env:
-          DISC: ${{ toJSON(github.event.discussion) }}
+          TIMESTAMP: ${{ github.event.discussion.created_at}}
+      - name: Send to Slack
+        id: slack
+        run: |
+          curl -d "$PAYLOAD" $SLACK_WEBHOOK_URL
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          PAYLOAD: "{\"attachments\":[{\"mrkdwn_in\":[\"text\"],\"fallback\":\"New Discussion opened at ${{ github.event.discussion.html_url}}\",\"author_name\":\"${{ github.event.discussion.user.login }}\",\"author_link\":\"${{ github.event.discussion.user.html_url }}\",\"author_icon\":\"${{ github.event.discussion.user.avatar_url }}\",\"title\":\"New Discussion opened: #${{github.event.discussion.number}} ${{ github.event.discussion.title}}\",\"title_link\":\"${{ github.event.discussion.html_url}}\",\"text\":\"${{ github.event.discussion.body}}\",\"footer\":\"${{ github.event.repository.full_name}}\",\"ts\":${{ steps.timestamp_transform.outputs.discussion_created_at}}}]}"
