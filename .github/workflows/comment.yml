@@ -40,6 +40,6 @@ jobs:
         id: slack
         uses: slackapi/slack-github-action@v1.15.0
         with:
-          payload: ${{ steps.build-payload.payload }}
+          payload: ${{ steps.build-payload.outputs.payload }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
