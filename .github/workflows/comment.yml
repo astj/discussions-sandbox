@@ -16,27 +16,20 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - run: |
-          echo "$DISC"
-        env:
-          DISC: ${{ toJSON(github.event.discussion) }}
-      - run: |
-          echo "$COMM"
-        env:
-          COMM: ${{ toJSON(github.event.comment) }}
       - name: Transform timestamp
         id: timestamp_transform
         run: |
           echo "::set-output name=comment_created_at::$(date --date=$TIMESTAMP +%s)"
         env:
           TIMESTAMP: ${{ github.event.comment.created_at}}
-      - id: build-payload
+      - name: Build json payload
+        id: build-payload
         run: |
           echo "$PAYLOAD"
           echo "::set-output name=payload::$PAYLOAD"
         env:
           PAYLOAD: "{\"attachments\":[{\"fallback\":\"New Comment on ${{ github.event.discussion.html_url}}\",\"author_name\":\"${{ github.event.comment.user.login }}\",\"author_link\":\"${{ github.event.comment.user.html_url }}\",\"author_icon\":\"${{ github.event.comment.user.avatar_url }}\",\"title\":\"Comment on #${{github.event.discussion.number}} ${{ github.event.discussion.title}}\",\"title_link\":\"${{ github.event.discussion.html_url}}\",\"text\":\"${{ github.event.comment.body}}\",\"footer\":\"${{ github.event.repository.full_name}}\",\"ts\":${{ steps.timestamp_transform.outputs.comment_created_at}}}]}"
-      - name: Send GitHub Action trigger data to Slack workflow
+      - name: Send to Slack
         id: slack
         uses: slackapi/slack-github-action@v1.15.0
         with:
