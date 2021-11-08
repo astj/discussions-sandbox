@@ -30,14 +30,16 @@ jobs:
           echo "::set-output name=comment_created_at::$(date --date=$TIMESTAMP +%s)"
         env:
           TIMESTAMP: ${{ github.event.comment.created_at}}
-      - run: |
+      - id: build-payload
+        run: |
           echo "$PAYLOAD"
+          echo "::set-output name=payload::$PAYLOAD"
         env:
-          PAYLOAD: "{\"fallback\":\"New Comment on ${{ github.event.discussion.html_url}}\",\"pretext\":\"Comment on <${{ github.event.discussion.title}}|${{ github.event.discussion.html_url}}>\",\"author_name\":\"${{ github.event.comment.user.login }}\",\"author_link\":\"${{ github.event.comment.user.html_url }}\",\"author_icon\":\"${{ github.event.comment.user.avatar_url }}\",\"title\":\"Comment on ${{ github.event.discussion.html_url}}\",\"title_link\":\"${{ github.event.discussion.html_url}}\",\"text\":\"${{ github.event.comment.body}}\",\"footer\":\"${{ github.event.repository.html_url}}\",\"ts\":${{ steps.timestamp_transform.outputs.comment_created_at}}}"
-      #- name: Send GitHub Action trigger data to Slack workflow
-      #  id: slack
-      #  uses: slackapi/slack-github-action@v1.15.0
-      #  with:
-      #    payload: "{\"fallback\":\"New Comment on ${{ github.event.discussion.html_url}}\",\"pretext\":\"Comment on ${{ github.event.discussion.html_url}} \",\"author_name\":\"${{ github.event.comment.user.login }}\",\"author_link\":\"${{ github.event.comment.user.html_url }}\",\"author_icon\":\"${{ github.event.comment.user.avatar_url }}\",\"title\":\"Comment on ${{ github.event.discussion.html_url}}\",\"title_link\":\"${{ github.event.discussion.html_url}}\",\"text\":\"${{ github.event.comment.body}}\",\"footer\":\"${{ github.event.repository.html_url}}\",\"ts\":${{ outputs.timestamp_transform.comment_created_at}}}"
-      #  env:
-      #    SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          PAYLOAD: "{\"fallback\":\"New Comment on ${{ github.event.discussion.html_url}}\",\"author_name\":\"${{ github.event.comment.user.login }}\",\"author_link\":\"${{ github.event.comment.user.html_url }}\",\"author_icon\":\"${{ github.event.comment.user.avatar_url }}\",\"title\":\"Comment on <${{ github.event.discussion.title}}|${{ github.event.discussion.html_url}}>\",\"title_link\":\"${{ github.event.discussion.html_url}}\",\"text\":\"${{ github.event.comment.body}}\",\"footer\":\"${{ github.event.repository.html_url}}\",\"ts\":${{ steps.timestamp_transform.outputs.comment_created_at}}}"
+      - name: Send GitHub Action trigger data to Slack workflow
+        id: slack
+        uses: slackapi/slack-github-action@v1.15.0
+        with:
+          payload: ${{ steps.build-payload.payload }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
