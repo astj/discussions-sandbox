@@ -24,8 +24,13 @@ jobs:
           echo "$COMM"
         env:
           COMM: ${{ toJSON(github.event.comment) }}
-      - name: Send GitHub Action trigger data to Slack workflow
-        id: slack
-        uses: slackapi/slack-github-action@v1.15.0
+      - name: Transform timestamp
+        id: timestamp-transform
+        run: |
+          echo "::set-output name=comment_created_at::$(date --date=$TIMESTAMP +%s)"
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          TIMESTAMP: ${{ github.event.comment.created_at}}
+      - run: |
+          echo "$PAYLOAD"
+        env:
+          PAYLOAD: "{\"fallback\":\"New Comment on ${{ github.event.discussion.html_url}}\",\"pretext\":\"Comment on ${{ github.event.discussion.html_url}} \",\"author_name\":\"${{ github.event.comment.user.login }}\",\"author_link\":\"${{ github.event.comment.user.html_url }}\",\"author_icon\":\"${{ github.event.comment.user.avatar_url }}\",\"title\":\"Comment on ${{ github.event.discussion.html_url}}\",\"title_link\":\"${{ github.event.discussion.html_url}}\",\"text\":\"${{ github.event.comment.body}}\",\"footer\":\"${{ github.event.repository.html_url}}\",\"ts\":${{ outputs.timestamp_transform.comment_created_at}}}"
