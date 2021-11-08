@@ -25,7 +25,7 @@ jobs:
         env:
           COMM: ${{ toJSON(github.event.comment) }}
       - name: Transform timestamp
-        id: timestamp-transform
+        id: timestamp_transform
         run: |
           echo "::set-output name=comment_created_at::$(date --date=$TIMESTAMP +%s)"
         env:
@@ -33,7 +33,7 @@ jobs:
       - run: |
           echo "$PAYLOAD"
         env:
-          PAYLOAD: "{\"fallback\":\"New Comment on ${{ github.event.discussion.html_url}}\",\"pretext\":\"Comment on ${{ github.event.discussion.html_url}} \",\"author_name\":\"${{ github.event.comment.user.login }}\",\"author_link\":\"${{ github.event.comment.user.html_url }}\",\"author_icon\":\"${{ github.event.comment.user.avatar_url }}\",\"title\":\"Comment on ${{ github.event.discussion.html_url}}\",\"title_link\":\"${{ github.event.discussion.html_url}}\",\"text\":\"${{ github.event.comment.body}}\",\"footer\":\"${{ github.event.repository.html_url}}\",\"ts\":${{ steps.timestamp_transform.outputs.comment_created_at}}}"
+          PAYLOAD: "{\"fallback\":\"New Comment on ${{ github.event.discussion.html_url}}\",\"pretext\":\"Comment on <${{ github.event.discussion.title}}|${{ github.event.discussion.html_url}}>\",\"author_name\":\"${{ github.event.comment.user.login }}\",\"author_link\":\"${{ github.event.comment.user.html_url }}\",\"author_icon\":\"${{ github.event.comment.user.avatar_url }}\",\"title\":\"Comment on ${{ github.event.discussion.html_url}}\",\"title_link\":\"${{ github.event.discussion.html_url}}\",\"text\":\"${{ github.event.comment.body}}\",\"footer\":\"${{ github.event.repository.html_url}}\",\"ts\":${{ steps.timestamp_transform.outputs.comment_created_at}}}"
       #- name: Send GitHub Action trigger data to Slack workflow
       #  id: slack
       #  uses: slackapi/slack-github-action@v1.15.0
