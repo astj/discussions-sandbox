@@ -16,6 +16,11 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      - name: mask secret
+        run: |
+          echo $SLACK_WEBHOOK_URL | perl -nE 's|^.+slack\.com||g; say "::add-mask::$_"'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       - name: Transform timestamp
         id: timestamp_transform
         run: |
